@@ -2,7 +2,7 @@
 // For production, switch provider to "postgresql" and point DATABASE_URL
 // at your Neon connection string — the models below don't need to change.
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
