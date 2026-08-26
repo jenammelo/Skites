@@ -1,0 +1,76 @@
+// Local/dev datasource is SQLite (file-based, zero setup).
+// For production, switch provider to "postgresql" and point DATABASE_URL
+// at your Neon connection string — the models below don't need to change.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+  engineType      = "wasm"
+}
+
+model Event {
+  id             String   @id @default(cuid())
+  name           String
+  organizerName  String
+  whatsapp       String?
+  email          String?
+  eventDate      String?
+  activationCode String   @unique
+  usherToken     String   @unique
+  status         String   @default("Draft") // Draft | Active | Expired
+  createdAt      DateTime @default(now())
+
+  guests  Guest[]
+  entries Entry[]
+  activity ActivityLog[]
+}
+
+model Guest {
+  id          String    @id @default(cuid())
+  eventId     String
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  table       String
+  seat        String?
+  checkedIn   Boolean   @default(false)
+  checkedInAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  entries Entry[]
+
+  @@index([eventId])
+  @@index([eventId, name])
+}
+
+model Entry {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guestId   String
+  guest     Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  guestName String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
+
+// General activity feed for the admin dashboard — separate from Entry
+// (which is specifically check-ins feeding the live usher counts).
+// Covers event creation, CSV uploads, seating edits, and check-ins so
+// the admin "Activity" page has one place to watch what's happening
+// across every event.
+model ActivityLog {
+  id        String   @id @default(cuid())
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  type      String // event_created | csv_uploaded | seating_edited | guest_checked_in
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([createdAt])
+}
