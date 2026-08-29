@@ -9,7 +9,7 @@ const FIELDS = [
   { key: "organizerName", label: "Organizer name", placeholder: "Sarah Doe" },
   { key: "whatsapp", label: "WhatsApp number", placeholder: "+237 6XX XXX XXX", optional: true },
   { key: "email", label: "Email", placeholder: "sarah@example.com", optional: true },
-  { key: "eventDate", label: "Event date", placeholder: "24 Oct 2026", optional: true },
+ { key: "eventDate", label: "Event date & time", placeholder: "", optional: false },
 ];
 
 export default function NewEventPage() {
@@ -73,19 +73,24 @@ export default function NewEventPage() {
       <form className="mt-6 space-y-4" onSubmit={submit}>
         {FIELDS.map((f) => (
           <div key={f.key}>
-            <label className="text-xs font-medium text-muted">{f.label}</label>
-            <input
-              required={!f.optional}
-              placeholder={f.placeholder}
-              value={form[f.key] ?? ""}
-              onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
-              className="touch mt-1 w-full rounded border border-line bg-white px-3 text-[15px] outline-none focus:border-ink"
-            />
+<label className="text-xs font-medium text-muted">{f.label}</label>
+<input
+type={f.key === "eventDate" ? "datetime-local" : "text"}
+required={!f.optional}
+placeholder={f.placeholder}
+value={form[f.key] ?? ""}
+onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
+className="touch mt-1 w-full rounded border border-line bg-white px-3 text-[15px] outline-none focus:border-ink"
+/>
           </div>
         ))}
         {error && <p className="text-sm text-red-700">{error}</p>}
         <Button type="submit" fullWidth className="mt-2" disabled={loading}>
+
           {loading ? "Creating…" : "Create Event"}
+          <p className="mt-1 text-sm text-muted">
+  An activation code is generated automatically once the event is created. The event stays live for 48 hours after the date/time you set here, then it's permanently deleted.
+</p>
         </Button>
       </form>
     </div>

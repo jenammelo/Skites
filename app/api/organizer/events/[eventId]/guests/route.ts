@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { parseGuestCsv } from "@/lib/csv";
+import { parseGuestCsv, parseGuestCsvSmart } from "@/lib/csv";
 import { syncGuests } from "@/lib/sync-guests";
 import { logActivity } from "@/lib/activity";
+import { getLiveEvent } from "@/lib/expiry";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ eve
     return NextResponse.json({ error: "No CSV content received." }, { status: 400 });
   }
 
-  const event = await prisma.event.findUnique({ where: { id: eventId } });
+const event = await getLiveEvent(eventId);
   if (!event) return NextResponse.json({ error: "Event not found." }, { status: 404 });
 
-  const result = parseGuestCsv(csv);
+const result = await parseGuestCsvSmart(csv);
   if (result.guests.length === 0) {
     return NextResponse.json(
       { error: result.errors[0] ?? "No valid guest rows found.", errors: result.errors },

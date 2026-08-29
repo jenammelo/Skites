@@ -53,7 +53,7 @@ export default async function EventsPage() {
             </div>
             <p className="mt-1 text-xs text-muted">
               Organizer: {e.organizerName}
-              {e.eventDate ? ` · Event Date: ${e.eventDate}` : ""}
+      {` · Live until: ${new Date(new Date(e.eventDate).getTime() + 48 * 60 * 60 * 1000).toLocaleString()}`}
             </p>
             <div className="tabular mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink/80">
               <span>{e._count.guests} guests</span>

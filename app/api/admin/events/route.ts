@@ -2,64 +2,89 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateActivationCode, generateUsherToken } from "@/lib/codes";
 import { logActivity } from "@/lib/activity";
+import { purgeAllExpired } from "@/lib/expiry";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const events = await prisma.event.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { guests: true } } },
-  });
+  try {
+    await purgeAllExpired();
 
-  const withCounts = await Promise.all(
-    events.map(async (e: (typeof events)[number]) => {
-      const checkedIn = await prisma.guest.count({ where: { eventId: e.id, checkedIn: true } });
-      return {
-        id: e.id,
-        name: e.name,
-        organizer: e.organizerName,
-        date: e.eventDate,
-        status: e.status,
-        guests: e._count.guests,
-        checkedIn,
-        activationCode: e.activationCode,
-      };
-    })
-  );
+    const events = await prisma.event.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { guests: true } } },
+    });
 
-  return NextResponse.json({ events: withCounts });
+    const withCounts = await Promise.all(
+      events.map(async (e: (typeof events)[number]) => {
+        const checkedIn = await prisma.guest.count({ where: { eventId: e.id, checkedIn: true } });
+        return {
+          id: e.id,
+          name: e.name,
+          organizer: e.organizerName,
+          date: e.eventDate,
+          status: e.status,
+          guests: e._count.guests,
+          checkedIn,
+          activationCode: e.activationCode,
+        };
+      })
+    );
+
+    return NextResponse.json({ events: withCounts });
+  } catch (err) {
+    console.error("Admin events list failed:", err);
+    return NextResponse.json({ error: "Couldn't load events. Try again in a moment." }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { name, organizerName, whatsapp, email, eventDate } = body ?? {};
+  let body: { name?: string; organizerName?: string; whatsapp?: string; email?: string; eventDate?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Malformed request." }, { status: 400 });
+  }
+
+  const { name, organizerName, whatsapp, email, eventDate } = body;
 
   if (!name || !organizerName) {
     return NextResponse.json({ error: "Event name and organizer name are required." }, { status: 400 });
   }
-
-  let activationCode = generateActivationCode();
-  // extremely unlikely, but guard against collision
-  for (let i = 0; i < 5; i++) {
-    const clash = await prisma.event.findUnique({ where: { activationCode } });
-    if (!clash) break;
-    activationCode = generateActivationCode();
+  if (!eventDate) {
+    return NextResponse.json({ error: "Event date is required — it sets the 48-hour live window." }, { status: 400 });
+  }
+  const parsedDate = new Date(eventDate);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return NextResponse.json({ error: "That event date isn't valid." }, { status: 400 });
   }
 
-  const event = await prisma.event.create({
-    data: {
-      name,
-      organizerName,
-      whatsapp: whatsapp || null,
-      email: email || null,
-      eventDate: eventDate || null,
-      activationCode,
-      usherToken: generateUsherToken(),
-      status: "Draft",
-    },
-  });
+  try {
+    let activationCode = generateActivationCode();
+    for (let i = 0; i < 5; i++) {
+      const clash = await prisma.event.findUnique({ where: { activationCode } });
+      if (!clash) break;
+      activationCode = generateActivationCode();
+    }
 
-  await logActivity("event_created", `Event "${event.name}" created by ${organizerName}.`, event.id);
+    const event = await prisma.event.create({
+      data: {
+        name,
+        organizerName,
+        whatsapp: whatsapp || null,
+        email: email || null,
+        eventDate: parsedDate,
+        activationCode,
+        usherToken: generateUsherToken(),
+        status: "Draft",
+      },
+    });
 
-  return NextResponse.json({ event }, { status: 201 });
+    await logActivity("event_created", `Event "${event.name}" created by ${organizerName}.`, event.id);
+
+    return NextResponse.json({ event }, { status: 201 });
+  } catch (err) {
+    console.error("Event creation failed:", err);
+    return NextResponse.json({ error: "Something went wrong creating the event. Try again." }, { status: 500 });
+  }
 }

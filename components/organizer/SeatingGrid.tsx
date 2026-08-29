@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, X, Check } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Trash2, X, Check, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export type GridGuest = { id: string; name: string; table: string; seat: string | null };
-type Row = { id?: string; name: string; table: string; seat: string; checkedIn?: boolean };
+type Row = { id?: string; name: string; table: string; seat: string };
 
 export function SeatingGrid({
   eventId,
@@ -21,8 +21,17 @@ export function SeatingGrid({
   const [rows, setRows] = useState<Row[]>(
     guests.map((g) => ({ id: g.id, name: g.name, table: g.table, seat: g.seat ?? "" }))
   );
+  const [query, setQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const visibleIndices = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows.map((_, i) => i);
+    return rows
+      .map((_, i) => i)
+      .filter((i) => rows[i].name.toLowerCase().includes(q) || rows[i].table.toLowerCase().includes(q));
+  }, [rows, query]);
 
   function update(index: number, field: "name" | "table" | "seat", value: string) {
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
@@ -74,6 +83,19 @@ export function SeatingGrid({
         </button>
       </div>
 
+      {/* Search */}
+      <div className="border-b border-line bg-white px-4 py-2.5">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by guest name or table"
+            className="w-full rounded-full border border-line bg-paper py-1.5 pl-8 pr-3 text-sm outline-none focus:border-ink"
+          />
+        </div>
+      </div>
+
       {error && (
         <div className="border-b border-line bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>
       )}
@@ -92,30 +114,38 @@ export function SeatingGrid({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.id ?? `new-${i}`} className="odd:bg-white even:bg-paper">
-                <td className="tabular border-b border-line px-2 py-1.5 text-xs text-muted">{i + 1}</td>
-                <GridCell value={row.name} onChange={(v) => update(i, "name", v)} placeholder="Guest name" />
-                <GridCell value={row.table} onChange={(v) => update(i, "table", v)} placeholder="Table 01" />
-                <GridCell value={row.seat} onChange={(v) => update(i, "seat", v)} placeholder="A1" />
-                <td className="border-b border-line px-2 py-1.5">
-                  {row.id ? (
-                    guests.find((g) => g.id === row.id) && (
+            {visibleIndices.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted">
+                  No rows match &ldquo;{query}&rdquo;.
+                </td>
+              </tr>
+            )}
+            {visibleIndices.map((i) => {
+              const row = rows[i];
+              return (
+                <tr key={row.id ?? `new-${i}`} className="odd:bg-white even:bg-paper">
+                  <td className="tabular border-b border-line px-2 py-1.5 text-xs text-muted">{i + 1}</td>
+                  <GridCell value={row.name} onChange={(v) => update(i, "name", v)} placeholder="Guest name" />
+                  <GridCell value={row.table} onChange={(v) => update(i, "table", v)} placeholder="Table 01" />
+                  <GridCell value={row.seat} onChange={(v) => update(i, "seat", v)} placeholder="A1" />
+                  <td className="border-b border-line px-2 py-1.5">
+                    {row.id ? (
                       <span className="inline-flex items-center gap-1 text-xs text-muted">
                         <Check size={11} className="text-good" /> saved
                       </span>
-                    )
-                  ) : (
-                    <span className="text-xs text-accent">new</span>
-                  )}
-                </td>
-                <td className="border-b border-line px-2 py-1.5">
-                  <button onClick={() => removeRow(i)} className="touch flex items-center justify-center text-muted hover:text-red-700">
-                    <Trash2 size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    ) : (
+                      <span className="text-xs text-accent">new</span>
+                    )}
+                  </td>
+                  <td className="border-b border-line px-2 py-1.5">
+                    <button onClick={() => removeRow(i)} className="touch flex items-center justify-center text-muted hover:text-red-700">
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
@@ -129,7 +159,9 @@ export function SeatingGrid({
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-line bg-white px-4 py-3.5">
-        <p className="tabular text-xs text-muted">{rows.length} rows</p>
+        <p className="tabular text-xs text-muted">
+          {query ? `${visibleIndices.length} of ${rows.length} rows` : `${rows.length} rows`}
+        </p>
         <div className="flex gap-3">
           <Button variant="secondary" onClick={onClose}>
             Cancel

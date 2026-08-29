@@ -18,3 +18,5 @@ dev.db-journal
 
 # misc
 .DS_Store
+
+.vercel

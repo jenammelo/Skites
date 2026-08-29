@@ -75,13 +75,12 @@ export function LandingPage() {
       {/* Mobile drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-40 sm:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />
-          <div className="absolute inset-y-0 right-0 flex w-[78%] max-w-xs flex-col bg-gradient-to-b from-[#2A1868] to-[#170F3D] p-5">
+                   <div className="absolute inset-y-0 right-0 flex w-[78%] max-w-xs flex-col bg-white p-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <Logo />
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="touch flex items-center justify-center rounded-2xl bg-white/15 px-2.5 text-white ring-1 ring-white/40"
+                className="touch flex items-center justify-center rounded-2xl bg-fuchsia-50 px-2.5 text-fuchsia-700 ring-1 ring-fuchsia-200"
                 aria-label="Close menu"
               >
                 <X size={18} />
@@ -97,7 +96,7 @@ export function LandingPage() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="touch rounded-xl px-3 py-2.5 text-[15px] font-semibold text-white hover:bg-white/10"
+                  className="touch rounded-xl px-3 py-2.5 text-[15px] font-semibold text-fuchsia-700 hover:bg-fuchsia-50"
                   onClick={() => setDrawerOpen(false)}
                 >
                   {l.label}
@@ -105,7 +104,7 @@ export function LandingPage() {
               ))}
             </nav>
             <div className="mt-auto pt-6">
-              <LangToggle lang={lang} setLang={setLang} />
+              <LangToggle lang={lang} setLang={setLang} dark={false} />
             </div>
           </div>
         </div>

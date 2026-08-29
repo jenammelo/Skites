@@ -13,7 +13,7 @@ async function main() {
       organizerName: "Sarah Doe",
       whatsapp: "+237 6XX XXX XXX",
       email: "sarah@example.com",
-      eventDate: "24 Oct 2026",
+    eventDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // demo event "happening" in 24h — stays live for 72h total from now
       activationCode: generateActivationCode(),
       usherToken: "demo-token",
       status: "Active",

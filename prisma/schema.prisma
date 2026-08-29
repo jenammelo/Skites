@@ -17,7 +17,7 @@ model Event {
   organizerName  String
   whatsapp       String?
   email          String?
-  eventDate      String?
+eventDate      DateTime @default(now())
   activationCode String   @unique
   usherToken     String   @unique
   status         String   @default("Draft") // Draft | Active | Expired
@@ -26,6 +26,8 @@ model Event {
   guests  Guest[]
   entries Entry[]
   activity ActivityLog[]
+    csvReplaceCount Int     @default(0)
+  lastFileName    String?
 }
 
 model Guest {
