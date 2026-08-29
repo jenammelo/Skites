@@ -54,7 +54,7 @@ export default function GuestPortal({ params }: { params: Promise<{ eventId: str
           </>
         ) : (
           <div className="pt-6 text-center">
-            <p className="text-lg text-ink">Welcome, {result.name.split(" ")[0]}.</p>
+         <p className="text-lg text-ink">{t.welcome(result.name)}</p>
             <p className="mt-1 text-sm text-muted">Your table is:</p>
             <p className="tabular mt-6 text-[76px] font-bold leading-none tracking-tight2">
               {result.table.replace(/^table\s*/i, "")}

@@ -18,6 +18,7 @@ export default function UsherPortal({ params }: { params: Promise<{ token: strin
   const [results, setResults] = useState<UsherGuest[]>([]);
   const [selected, setSelected] = useState<UsherGuest | null>(null);
   const [approved, setApproved] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ guest: UsherGuest; checkedInAt: string } | null>(null);
 
   useEffect(() => {
     fetch(`/api/usher/${token}/summary`)
@@ -49,13 +50,19 @@ export default function UsherPortal({ params }: { params: Promise<{ token: strin
   const remaining = useMemo(() => total - checkedIn, [total, checkedIn]);
   const pct = total > 0 ? (checkedIn / total) * 100 : 0;
 
-  async function checkIn(g: UsherGuest) {
+  async function checkIn(g: UsherGuest, override = false) {
     const res = await fetch(`/api/usher/${token}/checkin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ guestId: g.id }),
+      body: JSON.stringify({ guestId: g.id, override }),
     });
     const data = await res.json();
+
+    if (res.status === 409 && data.alreadyCheckedIn) {
+      setDuplicateWarning({ guest: g, checkedInAt: data.checkedInAt });
+      return;
+    }
+
     if (res.ok) {
       setCheckedIn(data.checkedIn);
       setTotal(data.total);
@@ -123,6 +130,42 @@ export default function UsherPortal({ params }: { params: Promise<{ token: strin
             </>
           )}
         </div>
+
+        {duplicateWarning && (
+          <div
+            className="fixed inset-0 z-30 flex items-end justify-center bg-ink/30 md:items-center"
+            onClick={() => setDuplicateWarning(null)}
+          >
+            <div
+              className="w-full max-w-sm rounded-t-lg border border-red-200 bg-white p-5 md:rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-base font-semibold text-red-700">Already checked in</h2>
+              <p className="mt-2 text-sm text-ink">
+                <strong>{duplicateWarning.guest.name}</strong> was already checked in at{" "}
+                {new Date(duplicateWarning.checkedInAt).toLocaleTimeString()}. Confirm this is genuinely the same
+                person before letting them in again.
+              </p>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setDuplicateWarning(null)}
+                  className="touch flex-1 rounded border border-line text-sm font-medium"
+                >
+                  Deny entry
+                </button>
+                <button
+                  onClick={() => {
+                    checkIn(duplicateWarning.guest, true);
+                    setDuplicateWarning(null);
+                  }}
+                  className="touch flex-1 rounded bg-red-600 text-sm font-medium text-white"
+                >
+                  Check in anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
