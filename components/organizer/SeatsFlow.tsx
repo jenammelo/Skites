@@ -2,7 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileSpreadsheet, QrCode, ChevronRight, RefreshCw, AlertTriangle, PlusCircle } from "lucide-react";
+import {
+  Upload,
+  FileSpreadsheet,
+  QrCode,
+  ChevronRight,
+  RefreshCw,
+  AlertTriangle,
+  PlusCircle,
+  UserCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -167,6 +176,11 @@ export function SeatsFlow() {
     router.push("/organizer/qr");
   }
 
+  function openUshers(event: OrganizerEvent) {
+    setActiveOrganizerEvent(event);
+    router.push("/organizer/ushers");
+  }
+
   if (loadingList) {
     return <div className="px-4 py-16 text-center text-sm text-muted">Loading your events…</div>;
   }
@@ -237,12 +251,20 @@ export function SeatsFlow() {
                     </button>
                   </Card>
 
-                  <button
-                    onClick={() => openQr(event)}
-                    className="mt-3 flex items-center gap-2 text-sm font-medium text-accent"
-                  >
-                    <QrCode size={15} /> View event QR code
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+                    <button
+                      onClick={() => openQr(event)}
+                      className="flex items-center gap-2 text-sm font-medium text-accent"
+                    >
+                      <QrCode size={15} /> View event QR code
+                    </button>
+                    <button
+                      onClick={() => openUshers(event)}
+                      className="flex items-center gap-2 text-sm font-medium text-accent"
+                    >
+                      <UserCheck size={15} /> View usher link
+                    </button>
+                  </div>
 
                   <div className="mt-4">
                     <p className="tabular mb-2 text-xs text-muted">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { QrCode, Armchair, MessageCircle, Instagram, Facebook, Linkedin } from "lucide-react";
+import { QrCode, Armchair, MessageCircle, Instagram, Facebook, Linkedin, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getOrganizerSession } from "@/lib/organizer-session";
@@ -10,6 +10,7 @@ import { getOrganizerSession } from "@/lib/organizer-session";
 const NAV = [
   { href: "/organizer/seats", label: "Seats", icon: Armchair },
   { href: "/organizer/qr", label: "QR Codes", icon: QrCode },
+    { href: "/organizer/ushers", label: "Ushers", icon: UserCheck },
   { href: "/organizer/contact", label: "Contact Us", icon: MessageCircle },
 ];
 
