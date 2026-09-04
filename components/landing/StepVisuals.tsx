@@ -2,7 +2,7 @@ import { Upload, Check, Search, QrCode as QrIcon } from "lucide-react";
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-[300px] rounded-[1.75rem] border border-violet-100 bg-white p-3 shadow-[0_20px_50px_-15px_rgba(76,29,149,0.25)]">
+    <div className="mx-auto w-full max-w-[300px] rounded-[1.75rem] border border-line bg-white p-3 shadow-[0_20px_50px_-15px_rgba(20,22,26,0.18)]">
       <div className="rounded-[1.25rem] border border-line bg-paper p-4">{children}</div>
     </div>
   );
@@ -11,9 +11,9 @@ function Frame({ children }: { children: React.ReactNode }) {
 export function UploadVisual() {
   return (
     <Frame>
-      <div className="flex flex-col items-center rounded-lg border border-dashed border-violet-200 bg-white px-4 py-8 text-center">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-50">
-          <Upload size={16} className="text-violet-600" strokeWidth={1.75} />
+      <div className="flex flex-col items-center rounded-lg border border-dashed border-line bg-white px-4 py-8 text-center">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-paper">
+          <Upload size={16} className="text-ink" strokeWidth={1.75} />
         </div>
         <p className="mt-3 text-xs font-medium text-ink">guests_wedding.csv</p>
         <p className="mt-1 text-[10px] text-muted">350 rows detected</p>
@@ -53,7 +53,7 @@ export function QRVisual() {
       <div className="flex flex-col items-center py-3">
         <div className="grid grid-cols-9 gap-[2px] rounded bg-white p-2">
           {cells.map((on, i) => (
-            <div key={i} className="h-2 w-2" style={{ background: on ? "#4338CA" : "transparent" }} />
+            <div key={i} className="h-2 w-2" style={{ background: on ? "#14161A" : "transparent" }} />
           ))}
         </div>
         <p className="mt-3 flex items-center gap-1 text-[10px] font-medium text-muted">

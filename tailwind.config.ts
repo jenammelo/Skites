@@ -10,13 +10,19 @@ const config: Config = {
         line: "#E6E4DE",
         muted: "#6B7078",
         accent: {
-          DEFAULT: "#4338CA", // indigo — ties to QR color options
+          DEFAULT: "#4338CA", // indigo — ties to QR color options, still used by organizer/admin
           soft: "#EEECFB",
+        },
+        brand: {
+          DEFAULT: "#FF007F", // landing page accent — used sparingly for CTAs/links/selected states
+          dark: "#D6006B",
+          soft: "#FFE6F2",
         },
         good: "#15803D",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui"],
+        display: ["var(--font-display)", "Georgia", "serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular"],
       },
       borderRadius: {
