@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Quote, Menu, X } from "lucide-react";
+import QRCode from "qrcode";
+import { ArrowRight, Quote, Menu, X, Apple, Play } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "./Logo";
 import { Reveal } from "./Reveal";
 import { HeroBackground } from "./HeroBackground";
+import { FaqAccordion } from "./FaqAccordion";
 import { UploadVisual, OrganizeVisual, QRVisual, GuestVisual, UsherVisual } from "./StepVisuals";
 import { COPY, Lang } from "./copy";
 import { cn } from "@/lib/utils";
@@ -16,11 +18,21 @@ const STEP_VISUALS = [UploadVisual, OrganizeVisual, QRVisual, GuestVisual, Usher
 export function LandingPage() {
   const [lang, setLang] = useState<Lang>("EN");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [footerQr, setFooterQr] = useState<string | null>(null);
   const t = COPY[lang];
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    QRCode.toDataURL(`${window.location.origin}/guest/demo`, {
+      color: { dark: "#FFFFFF", light: "#00000000" },
+      margin: 0,
+      width: 200,
+    }).then(setFooterQr);
+  }, []);
 
   return (
     <div className="min-h-dvh bg-paper text-ink">
-      {/* NAV — white, minimal, editorial */}
+      {/* NAV */}
       <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10">
           <Logo />
@@ -89,7 +101,7 @@ export function LandingPage() {
         </div>
       )}
 
-      {/* HERO — photo-led, editorial headline */}
+      {/* HERO */}
       <section className="relative isolate flex min-h-[85vh] items-end overflow-hidden pb-16 pt-24 sm:min-h-[90vh] md:pb-24">
         <HeroBackground />
         <div className="relative mx-auto w-full max-w-xl px-5 md:max-w-2xl md:px-10">
@@ -139,7 +151,7 @@ export function LandingPage() {
         </Reveal>
       </section>
 
-      {/* STEPS — horizontal scroll on mobile with next-card peek, grid on desktop */}
+      {/* STEPS */}
       <section className="px-5 py-16 md:px-10 md:py-24">
         <Reveal>
           <div className="mx-auto max-w-xl text-center">
@@ -176,7 +188,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* STATS — dark band */}
+      {/* STATS */}
       <section className="bg-ink px-5 py-12 text-white md:px-10">
         <Reveal>
           <h2 className="text-center text-sm font-semibold uppercase tracking-[0.14em] text-white/70">
@@ -195,7 +207,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ROLES — editorial card grid */}
+      {/* ROLES */}
       <section className="mx-auto max-w-5xl px-5 py-16 md:px-10 md:py-24">
         <Reveal>
           <h2 className="font-display text-center text-[26px] font-bold md:text-4xl">{t.rolesHeading}</h2>
@@ -218,7 +230,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS — horizontal scroll, editorial quote cards */}
+      {/* TESTIMONIALS */}
       <section className="border-y border-line bg-white px-5 py-16 md:px-10 md:py-24">
         <Reveal>
           <h2 className="font-display text-center text-[26px] font-bold md:text-4xl">{t.testimonialsHeading}</h2>
@@ -258,7 +270,17 @@ export function LandingPage() {
         </Reveal>
       </section>
 
-      {/* FINAL CTA — bold pink band */}
+      {/* FAQ */}
+      <section className="bg-white px-5 py-16 md:px-10 md:py-24">
+        <Reveal>
+          <h2 className="font-display text-center text-[26px] font-bold md:text-4xl">{t.faqHeading}</h2>
+        </Reveal>
+        <Reveal delay={80}>
+          <FaqAccordion items={t.faq} />
+        </Reveal>
+      </section>
+
+      {/* FINAL CTA */}
       <section className="bg-brand px-5 py-16 text-center text-white md:px-10 md:py-20">
         <Reveal>
           <h2 className="font-display mx-auto max-w-xl text-[28px] font-bold leading-tight md:text-4xl">
@@ -273,18 +295,68 @@ export function LandingPage() {
         </Reveal>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-line bg-white px-5 py-8 md:px-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <Logo />
-          <div className="flex items-center gap-5">
-            <Link href="/organizer/contact" className="text-xs text-muted hover:text-ink">
-              {t.footerContact}
-            </Link>
-            <Link href="/admin/events" className="text-xs text-muted hover:text-ink">
-              {t.footerPlatform}
-            </Link>
-            <LangToggle lang={lang} setLang={setLang} />
+      {/* FOOTER — dark, structured, only real links */}
+      <footer className="bg-ink px-5 pb-8 pt-14 text-white md:px-10 md:pt-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1.2fr]">
+            <div>
+              <Logo size="lg" onDark />
+              <p className="mt-3 flex items-center gap-1.5 text-sm text-white/60">
+                {t.footerMadeWith}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50">{t.footerGetStarted}</p>
+              <nav className="mt-4 flex flex-col gap-2.5">
+                <Link href="/organizer/activate" className="text-sm text-white/80 hover:text-white">
+                  {t.roles[0].title}
+                </Link>
+                <Link href="/guest/demo" className="text-sm text-white/80 hover:text-white">
+                  {t.roles[1].title}
+                </Link>
+                <Link href="/usher/demo-token" className="text-sm text-white/80 hover:text-white">
+                  {t.roles[2].title}
+                </Link>
+              </nav>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/50">{t.footerCompany}</p>
+              <nav className="mt-4 flex flex-col gap-2.5">
+                <Link href="/organizer/contact" className="text-sm text-white/80 hover:text-white">
+                  {t.footerContact}
+                </Link>
+                <Link href="/admin/events" className="text-sm text-white/80 hover:text-white">
+                  {t.footerPlatform}
+                </Link>
+              </nav>
+              <div className="mt-6">
+                <LangToggle lang={lang} setLang={setLang} onDark />
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-white">{t.footerQrHeading}</p>
+              <p className="mt-1 text-xs text-white/60">{t.footerQrSub}</p>
+              <div className="mt-4 inline-flex items-center gap-3 rounded-2xl border border-white/15 bg-white/5 p-3">
+                {footerQr ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={footerQr} alt="Scan to try the guest portal" width={72} height={72} className="h-[72px] w-[72px]" />
+                ) : (
+                  <div className="h-[72px] w-[72px] animate-pulse rounded bg-white/10" />
+                )}
+                <div className="text-xs text-white/70">
+                  <p>skites.vercel.app</p>
+                  <p className="mt-0.5">/guest/demo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 flex flex-col items-center gap-3 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:justify-between">
+            <p>© {new Date().getFullYear()} Skites</p>
+            <p>Douala, Cameroon</p>
           </div>
         </div>
       </footer>
@@ -292,16 +364,30 @@ export function LandingPage() {
   );
 }
 
-function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
+function LangToggle({
+  lang,
+  setLang,
+  onDark = false,
+}: {
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  onDark?: boolean;
+}) {
   return (
-    <div className="inline-flex rounded-full border border-line p-0.5">
+    <div className={cn("inline-flex rounded-full border p-0.5", onDark ? "border-white/20" : "border-line")}>
       {(["EN", "FR"] as const).map((l) => (
         <button
           key={l}
           onClick={() => setLang(l)}
           className={cn(
             "touch rounded-full px-2.5 text-xs font-semibold transition-colors",
-            lang === l ? "bg-ink text-white" : "text-muted"
+            lang === l
+              ? onDark
+                ? "bg-white text-ink"
+                : "bg-ink text-white"
+              : onDark
+              ? "text-white/60"
+              : "text-muted"
           )}
         >
           {l}

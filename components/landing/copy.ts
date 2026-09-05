@@ -32,7 +32,40 @@ export const COPY = {
         body: "At the door, ushers search a name, verify, and check the guest in — with a live count of who's arrived.",
       },
     ],
+        faqHeading: "Questions, answered",
+    faq: [
+      {
+        q: "Do guests need to download an app?",
+        a: "No. Guests just scan the event QR code and type their name in a browser — no app, no account, no login.",
+      },
+      {
+        q: "What file formats can I upload?",
+        a: "CSV, Excel (.xlsx/.xls), or a Google Sheets export. The system reads messy files too — misspelled headers, French column names, and different table-naming styles are all handled automatically.",
+      },
+      {
+        q: "Can I fix a mistake after uploading?",
+        a: "Yes — you get 2 free replacements per event, or you can edit individual rows directly in the spreadsheet-style editor. Guests who've already checked in keep their status either way.",
+      },
+      {
+        q: "How long does an event stay active?",
+        a: "48 hours from the event's date and time. After that, the event and its guest data are automatically and permanently deleted.",
+      },
+      {
+        q: "How do ushers check people in?",
+        a: "Organizers get a separate usher link to share with their door staff. Ushers search a guest's name, verify them in person, and check them in — with live counts of who's arrived.",
+      },
+      {
+        q: "What does it cost?",
+        a: "15,000 FCFA per event, arranged directly with our team on WhatsApp when your event is registered.",
+      },
+    ],
+    footerGetStarted: "Get started",
+    footerCompany: "Company",
+    footerQrHeading: "See it in action",
+    footerQrSub: "Scan to try the guest portal yourself.",
+    footerMadeWith: "Made in Cameroon",
     statsHeading: "Built for real doors, not demos",
+
     stats: [
       { value: "10,000+", label: "guests seated" },
       { value: "500+", label: "events run" },
@@ -87,6 +120,7 @@ export const COPY = {
       "One QR code per event, printed once. Seating can change right up to the door — the same code always resolves to the latest table assignment.",
     footerContact: "Contact",
     footerPlatform: "Platform team",
+
   },
   FR: {
     navLogin: "Connexion organisateur",
@@ -152,7 +186,40 @@ export const COPY = {
         cta: "Essayer l'espace hôte",
       },
     ],
+        faqHeading: "Questions fréquentes",
+    faq: [
+      {
+        q: "Les invités doivent-ils télécharger une application ?",
+        a: "Non. Les invités scannent simplement le QR code de l'événement et tapent leur nom dans un navigateur — aucune application, aucun compte, aucune connexion.",
+      },
+      {
+        q: "Quels formats de fichiers puis-je importer ?",
+        a: "CSV, Excel (.xlsx/.xls), ou un export Google Sheets. Le système lit aussi les fichiers imparfaits — en-têtes mal orthographiés, noms de colonnes en français, et différentes conventions de nommage des tables sont gérés automatiquement.",
+      },
+      {
+        q: "Puis-je corriger une erreur après l'import ?",
+        a: "Oui — vous avez 2 remplacements gratuits par événement, ou vous pouvez modifier des lignes individuelles directement dans l'éditeur type tableur. Les invités déjà enregistrés gardent leur statut dans les deux cas.",
+      },
+      {
+        q: "Combien de temps un événement reste-t-il actif ?",
+        a: "48 heures à partir de la date et l'heure de l'événement. Ensuite, l'événement et ses données d'invités sont automatiquement et définitivement supprimés.",
+      },
+      {
+        q: "Comment les hôtes enregistrent-ils les invités ?",
+        a: "Les organisateurs reçoivent un lien hôte séparé à partager avec leur personnel d'accueil. Les hôtes recherchent le nom d'un invité, le vérifient en personne, et l'enregistrent — avec un décompte en direct des arrivées.",
+      },
+      {
+        q: "Quel est le tarif ?",
+        a: "15 000 FCFA par événement, à convenir directement avec notre équipe sur WhatsApp lors de l'enregistrement de votre événement.",
+      },
+    ],
+    footerGetStarted: "Commencer",
+    footerCompany: "Entreprise",
+    footerQrHeading: "Voir en action",
+    footerQrSub: "Scannez pour essayer l'espace invité vous-même.",
+    footerMadeWith: "Conçu au Cameroun",
     testimonialsHeading: "Adopté lors de vrais événements",
+    
     testimonials: [
       {
         quote: "Nos invités trouvaient déjà leur table avant même qu'on ait fini d'installer l'entrée.",

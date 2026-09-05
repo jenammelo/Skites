@@ -131,25 +131,58 @@ export function parseGuestCsv(csvText: string): CsvResult {
  * uploads should never hard-fail because a second service is down.
  */
 export async function parseGuestCsvSmart(csvText: string): Promise<CsvResult> {
-  const url = process.env.PARSER_SERVICE_URL;
-  if (!url) return parseGuestCsv(csvText);
+  const url = process.env.PARSER_SERVICE_URL?.replace(/\/+$/, "");
+
+  if (!url) {
+    console.warn(
+      "[SKITES Parser] PARSER_SERVICE_URL is not configured. Using local parser."
+    );
+
+    return parseGuestCsv(csvText);
+  }
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    const res = await fetch(`${url}/api/parse`, {
+    const parserUrl = `${url}/api/parse`;
+
+    console.log(`[SKITES Parser] Calling Python parser: ${parserUrl}`);
+
+    const res = await fetch(parserUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ csv: csvText }),
       signal: controller.signal,
     });
+
     clearTimeout(timeout);
 
-    if (!res.ok) return parseGuestCsv(csvText);
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
+
+      console.error(
+        `[SKITES Parser] Python parser returned ${res.status}: ${errorText}`
+      );
+
+      return parseGuestCsv(csvText);
+    }
 
     const data = await res.json();
-    if (!Array.isArray(data.guests)) return parseGuestCsv(csvText);
+
+    if (!Array.isArray(data.guests)) {
+      console.error(
+        "[SKITES Parser] Python parser returned an invalid guests array."
+      );
+
+      return parseGuestCsv(csvText);
+    }
+
+    console.log(
+      `[SKITES Parser] Python parser successfully returned ${data.guests.length} guests.`
+    );
 
     return {
       guests: data.guests,
@@ -157,7 +190,11 @@ export async function parseGuestCsvSmart(csvText: string): Promise<CsvResult> {
       skipped: data.skipped ?? 0,
     };
   } catch (err) {
-    console.error("Parser service unavailable, falling back to local parser:", err);
+    console.error(
+      "[SKITES Parser] Python parser unavailable. Falling back to local parser:",
+      err
+    );
+
     return parseGuestCsv(csvText);
   }
 }
