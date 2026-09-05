@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import QRCode from "qrcode";
-import { ArrowRight, Quote, Menu, X, Apple, Play } from "lucide-react";
+import { ArrowRight, Quote, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "./Logo";
 import { Reveal } from "./Reveal";
@@ -14,6 +15,7 @@ import { COPY, Lang } from "./copy";
 import { cn } from "@/lib/utils";
 
 const STEP_VISUALS = [UploadVisual, OrganizeVisual, QRVisual, GuestVisual, UsherVisual];
+const STEP_IMAGES = ["upload", "organize", "qr", "guest", "usher"];
 
 export function LandingPage() {
   const [lang, setLang] = useState<Lang>("EN");
@@ -151,7 +153,7 @@ export function LandingPage() {
         </Reveal>
       </section>
 
-      {/* STEPS */}
+      {/* STEPS — photo-forward cards, mockup floating over the image */}
       <section className="px-5 py-16 md:px-10 md:py-24">
         <Reveal>
           <div className="mx-auto max-w-xl text-center">
@@ -163,27 +165,34 @@ export function LandingPage() {
         <div className="mx-auto mt-10 max-w-6xl">
           <div
             className={cn(
-              "flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-5 md:gap-5 md:overflow-visible md:pb-0",
+              "flex gap-5 overflow-x-auto pb-4 md:grid md:grid-cols-5 md:overflow-visible md:pb-0",
               "snap-x snap-mandatory [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             )}
           >
-            {t.steps.map((step, i) => {
-              const Visual = STEP_VISUALS[i];
-              return (
-                <Reveal key={step.title} delay={i * 60} className="w-[78%] shrink-0 snap-start md:w-auto">
-                  <div className="flex h-full flex-col rounded-2xl border border-line bg-white p-5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-bold text-white">
-                      {i + 1}
-                    </span>
-                    <h3 className="mt-4 text-[15px] font-semibold tracking-tight2">{step.title}</h3>
-                    <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-ink/65">{step.body}</p>
-                    <div className="mt-4">
-                      <Visual />
-                    </div>
+            {t.steps.map((step, i) => (
+              <Reveal key={step.title} delay={i * 60} className="w-[70%] shrink-0 snap-start md:w-auto">
+                <div className="flex h-full flex-col">
+                  <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-line">
+                    <Image
+                      src={`/steps/${STEP_IMAGES[i]}.jpg`}
+                      alt=""
+                      fill
+                      loading="lazy"
+                      quality={65}
+                      sizes="(min-width: 768px) 20vw, 70vw"
+                      className="object-cover"
+                    />
                   </div>
-                </Reveal>
-              );
-            })}
+                  <div className="mt-4">
+                    <h3 className="flex items-baseline gap-1 text-[15px] font-semibold tracking-tight2">
+                      {step.title}
+                      <ArrowRight size={13} className="text-brand" />
+                    </h3>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-ink/65">{step.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -295,15 +304,13 @@ export function LandingPage() {
         </Reveal>
       </section>
 
-      {/* FOOTER — dark, structured, only real links */}
+      {/* FOOTER */}
       <footer className="bg-ink px-5 pb-8 pt-14 text-white md:px-10 md:pt-20">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-10 md:grid-cols-[1.2fr_1fr_1fr_1.2fr]">
             <div>
               <Logo size="lg" onDark />
-              <p className="mt-3 flex items-center gap-1.5 text-sm text-white/60">
-                {t.footerMadeWith}
-              </p>
+              <p className="mt-3 flex items-center gap-1.5 text-sm text-white/60">{t.footerMadeWith}</p>
             </div>
 
             <div>

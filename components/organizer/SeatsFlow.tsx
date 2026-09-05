@@ -29,7 +29,7 @@ type EventSummary = {
 };
 
 const REPLACE_LIMIT = 2;
-const ACCEPTED = ".csv,.xlsx,.xls";
+const ACCEPTED = ".csv,.xlsx,.xls,.xlsm";
 
 export function SeatsFlow() {
   const router = useRouter();
@@ -104,17 +104,96 @@ export function SeatsFlow() {
     const targetEventId = pendingTarget.current;
     e.target.value = "";
     if (!file || !targetEventId) return;
+    runImportDirect(targetEventId, file);
+  }
 
+  function startProgress() {
+    setProgress(0);
+    progressTimer.current = setInterval(() => {
+      setProgress((p) => (p < 85 ? p + Math.max(3, Math.round((90 - p) * 0.15)) : p));
+    }, 160);
+  }
+
+  function stopProgress() {
+    if (progressTimer.current) clearInterval(progressTimer.current);
+    progressTimer.current = null;
+  }
+
+  function runImportDirect(eventId: string, file: File) {
+    setCardErrors((prev) => ({ ...prev, [eventId]: null }));
+    setLimitReachedFor(null);
+    setUploadingEventId(eventId);
+    startProgress();
+
+    (async () => {
+      try {
+        const form = new FormData();
+        form.append("file", file, file.name);
+
+        const res = await fetch(`/api/organizer/events/${eventId}/guests/upload`, {
+          method: "POST",
+          body: form,
+        });
+        const data = await res.json();
+        stopProgress();
+
+        if (!res.ok) {
+          // The direct-upload path failed (parser service down, bad file,
+          // etc.) — fall back to the older client-side conversion path
+          // rather than just giving up.
+          await runImportFallback(eventId, file);
+          return;
+        }
+
+        setProgress(100);
+        if (data.limitReached) setLimitReachedFor(eventId);
+        setTimeout(async () => {
+          await refreshSummary(eventId);
+          setUploadingEventId(null);
+        }, 350);
+      } catch (err) {
+        console.error(err);
+        stopProgress();
+        await runImportFallback(eventId, file);
+      }
+    })();
+  }
+
+  async function runImportFallback(eventId: string, file: File) {
     try {
-      const isExcel = /\.xlsx?$/i.test(file.name);
+      const isExcel = /\.xlsx?m?$/i.test(file.name);
       const csvText = isExcel ? await excelToCsv(file) : await file.text();
-      runImport(targetEventId, csvText, file.name);
+
+      startProgress();
+      const res = await fetch(`/api/organizer/events/${eventId}/guests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ csv: csvText, fileName: file.name }),
+      });
+      const data = await res.json();
+      stopProgress();
+
+      if (!res.ok) {
+        setProgress(0);
+        if (data.limitReached) setLimitReachedFor(eventId);
+        setCardErrors((prev) => ({ ...prev, [eventId]: data.error ?? "We couldn't process that file." }));
+        setUploadingEventId(null);
+        return;
+      }
+
+      setProgress(100);
+      setTimeout(async () => {
+        await refreshSummary(eventId);
+        setUploadingEventId(null);
+      }, 350);
     } catch (err) {
       console.error(err);
+      stopProgress();
       setCardErrors((prev) => ({
         ...prev,
-        [targetEventId]: "We couldn't read that file. Make sure it's a CSV, .xlsx, or .xls export.",
+        [eventId]: "We couldn't read that file. Make sure it's a CSV, .xlsx, or .xls export.",
       }));
+      setUploadingEventId(null);
     }
   }
 
@@ -125,50 +204,6 @@ export function SeatsFlow() {
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     if (!firstSheet) throw new Error("No sheet found in file.");
     return XLSX.utils.sheet_to_csv(firstSheet);
-  }
-
-  function runImport(eventId: string, csvText: string, name: string) {
-    setCardErrors((prev) => ({ ...prev, [eventId]: null }));
-    setLimitReachedFor(null);
-    setUploadingEventId(eventId);
-    setProgress(0);
-    progressTimer.current = setInterval(() => {
-      setProgress((p) => (p < 85 ? p + Math.max(3, Math.round((90 - p) * 0.15)) : p));
-    }, 160);
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/organizer/events/${eventId}/guests`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ csv: csvText, fileName: name }),
-        });
-        const data = await res.json();
-        if (progressTimer.current) clearInterval(progressTimer.current);
-
-        if (!res.ok) {
-          setProgress(0);
-          if (data.limitReached) setLimitReachedFor(eventId);
-          setCardErrors((prev) => ({ ...prev, [eventId]: data.error ?? "We couldn't process that file." }));
-          setUploadingEventId(null);
-          return;
-        }
-
-        setProgress(100);
-        setTimeout(async () => {
-          await refreshSummary(eventId);
-          setUploadingEventId(null);
-        }, 350);
-      } catch (err) {
-        console.error(err);
-        if (progressTimer.current) clearInterval(progressTimer.current);
-        setCardErrors((prev) => ({
-          ...prev,
-          [eventId]: "Something went wrong uploading your file. Check your connection and try again.",
-        }));
-        setUploadingEventId(null);
-      }
-    })();
   }
 
   function openQr(event: OrganizerEvent) {
