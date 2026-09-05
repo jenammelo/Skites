@@ -20,3 +20,4 @@ dev.db-journal
 .DS_Store
 
 .vercel
+.env*
